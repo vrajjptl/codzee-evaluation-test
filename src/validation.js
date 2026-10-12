@@ -1,4 +1,5 @@
 const ALLOWED_STATUSES = ["todo", "in_progress", "done"];
+const ALLOWED_PRIORITIES = ["low", "medium", "high"];
 
 function parseId(raw) {
   const id = Number(raw);
@@ -6,6 +7,54 @@ function parseId(raw) {
     return { error: "Task id must be a positive integer" };
   }
   return { id };
+}
+
+function parsePriority(raw, { required = false } = {}) {
+  if (raw === undefined || raw === null || raw === "") {
+    if (required) {
+      return { error: "priority is required" };
+    }
+    return { value: "medium" };
+  }
+
+  if (!ALLOWED_PRIORITIES.includes(raw)) {
+    return {
+      error: `priority must be one of: ${ALLOWED_PRIORITIES.join(", ")}`,
+    };
+  }
+
+  return { value: raw };
+}
+
+function parseListFilters(query = {}) {
+  const filters = {};
+
+  if (query.status !== undefined && query.status !== "") {
+    if (!ALLOWED_STATUSES.includes(query.status)) {
+      return {
+        error: `status filter must be one of: ${ALLOWED_STATUSES.join(", ")}`,
+      };
+    }
+    filters.status = query.status;
+  }
+
+  if (query.priority !== undefined && query.priority !== "") {
+    if (!ALLOWED_PRIORITIES.includes(query.priority)) {
+      return {
+        error: `priority filter must be one of: ${ALLOWED_PRIORITIES.join(", ")}`,
+      };
+    }
+    filters.priority = query.priority;
+  }
+
+  if (query.q !== undefined && query.q !== "") {
+    if (typeof query.q !== "string") {
+      return { error: "q must be a string" };
+    }
+    filters.q = query.q.trim();
+  }
+
+  return { value: filters };
 }
 
 /**
@@ -32,11 +81,17 @@ function validateCreatePayload(body) {
     dueDate = new Date(body.dueDate).toISOString();
   }
 
+  const priorityResult = parsePriority(body.priority);
+  if (priorityResult.error) {
+    return { error: priorityResult.error };
+  }
+
   return {
     value: {
       title,
       description: typeof body.description === "string" ? body.description : "",
       dueDate,
+      priority: priorityResult.value,
     },
   };
 }
@@ -69,6 +124,14 @@ function validateUpdatePayload(body) {
     updates.status = body.status;
   }
 
+  if (body.priority !== undefined) {
+    const priorityResult = parsePriority(body.priority, { required: true });
+    if (priorityResult.error) {
+      return { error: priorityResult.error };
+    }
+    updates.priority = priorityResult.value;
+  }
+
   if (body.dueDate !== undefined) {
     if (body.dueDate === null || body.dueDate === "") {
       updates.dueDate = null;
@@ -86,7 +149,10 @@ function validateUpdatePayload(body) {
 
 module.exports = {
   ALLOWED_STATUSES,
+  ALLOWED_PRIORITIES,
   parseId,
+  parsePriority,
+  parseListFilters,
   validateCreatePayload,
   validateUpdatePayload,
 };

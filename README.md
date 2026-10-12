@@ -6,6 +6,8 @@ A small Express.js REST API used for the **Codzee first-round evaluation**.
 
 - Create, list, get, update, and delete tasks
 - Task statuses: `todo`, `in_progress`, `done`
+- Task priorities: `low`, `medium`, `high`
+- Filter list endpoint by `status`, `priority`, and text search (`q`)
 - Optional due dates
 - In-memory store (resets when the process restarts)
 
@@ -23,7 +25,7 @@ Server runs at `http://localhost:3000`.
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/health` | Health check |
-| `GET` | `/api/tasks` | List all tasks |
+| `GET` | `/api/tasks` | List tasks (`?status=&priority=&q=`) |
 | `GET` | `/api/tasks/:id` | Get one task |
 | `POST` | `/api/tasks` | Create a task |
 | `PATCH` | `/api/tasks/:id` | Update a task |
