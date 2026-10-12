@@ -2,14 +2,20 @@ const express = require("express");
 const store = require("../store");
 const {
   parseId,
+  parseListFilters,
   validateCreatePayload,
   validateUpdatePayload,
 } = require("../validation");
 
 const router = express.Router();
 
-router.get("/", (_req, res) => {
-  res.json({ data: store.listTasks() });
+router.get("/", (req, res) => {
+  const filters = parseListFilters(req.query);
+  if (filters.error) {
+    return res.status(400).json({ error: filters.error });
+  }
+
+  return res.json({ data: store.listTasks(filters.value) });
 });
 
 router.get("/:id", (req, res) => {

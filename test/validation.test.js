@@ -2,6 +2,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
   parseId,
+  parseListFilters,
   validateCreatePayload,
   validateUpdatePayload,
 } = require("../src/validation");
@@ -39,5 +40,30 @@ describe("validateUpdatePayload", () => {
   it("validates status values", () => {
     const result = validateUpdatePayload({ status: "archived" });
     assert.match(result.error, /status must be one of/);
+  });
+
+  it("validates priority values", () => {
+    const result = validateUpdatePayload({ priority: "urgent" });
+    assert.match(result.error, /priority must be one of/);
+  });
+});
+
+describe("parseListFilters", () => {
+  it("parses supported query filters", () => {
+    const result = parseListFilters({
+      status: "todo",
+      priority: "high",
+      q: " docs ",
+    });
+    assert.deepEqual(result.value, {
+      status: "todo",
+      priority: "high",
+      q: "docs",
+    });
+  });
+
+  it("rejects unknown priority filters", () => {
+    const result = parseListFilters({ priority: "critical" });
+    assert.match(result.error, /priority filter must be one of/);
   });
 });
