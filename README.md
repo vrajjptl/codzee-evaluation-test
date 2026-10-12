@@ -18,6 +18,22 @@ npm start
 
 Server runs at `http://localhost:3000`.
 
+### Optional API key
+
+Set `API_KEY` to require an `x-api-key` header on `/api/tasks` routes:
+
+```bash
+set API_KEY=dev-secret
+npm start
+```
+
+### Security defaults
+
+- JSON body size limited to 16kb
+- Basic security response headers
+- Simple in-memory rate limiting
+- `X-Powered-By` disabled
+
 ## API
 
 | Method | Path | Description |
@@ -35,6 +51,12 @@ Server runs at `http://localhost:3000`.
 curl -X POST http://localhost:3000/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title":"Ship Codzee evaluation","description":"Open 3 meaningful PRs"}'
+```
+
+## Tests
+
+```bash
+npm test
 ```
 
 ## Codzee evaluation

@@ -1,72 +1,42 @@
 const express = require("express");
-const store = require("../store");
-const {
-  parseId,
-  validateCreatePayload,
-  validateUpdatePayload,
-} = require("../validation");
+const taskService = require("../services/taskService");
 
 const router = express.Router();
 
 router.get("/", (_req, res) => {
-  res.json({ data: store.listTasks() });
+  res.json({ data: taskService.listTasks() });
 });
 
 router.get("/:id", (req, res) => {
-  const parsed = parseId(req.params.id);
-  if (parsed.error) {
-    return res.status(400).json({ error: parsed.error });
+  const result = taskService.getTaskById(req.params.id);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
-
-  const task = store.getTask(parsed.id);
-  if (!task) {
-    return res.status(404).json({ error: "Task not found" });
-  }
-
-  return res.json({ data: task });
+  return res.status(result.status).json({ data: result.data });
 });
 
 router.post("/", (req, res) => {
-  const result = validateCreatePayload(req.body);
+  const result = taskService.createTask(req.body);
   if (result.error) {
-    return res.status(400).json({ error: result.error });
+    return res.status(result.status).json({ error: result.error });
   }
-
-  const task = store.createTask(result.value);
-  return res.status(201).json({ data: task });
+  return res.status(result.status).json({ data: result.data });
 });
 
 router.patch("/:id", (req, res) => {
-  const parsed = parseId(req.params.id);
-  if (parsed.error) {
-    return res.status(400).json({ error: parsed.error });
-  }
-
-  const result = validateUpdatePayload(req.body);
+  const result = taskService.updateTask(req.params.id, req.body);
   if (result.error) {
-    return res.status(400).json({ error: result.error });
+    return res.status(result.status).json({ error: result.error });
   }
-
-  const task = store.updateTask(parsed.id, result.value);
-  if (!task) {
-    return res.status(404).json({ error: "Task not found" });
-  }
-
-  return res.json({ data: task });
+  return res.status(result.status).json({ data: result.data });
 });
 
 router.delete("/:id", (req, res) => {
-  const parsed = parseId(req.params.id);
-  if (parsed.error) {
-    return res.status(400).json({ error: parsed.error });
+  const result = taskService.deleteTask(req.params.id);
+  if (result.error) {
+    return res.status(result.status).json({ error: result.error });
   }
-
-  const deleted = store.deleteTask(parsed.id);
-  if (!deleted) {
-    return res.status(404).json({ error: "Task not found" });
-  }
-
-  return res.status(204).send();
+  return res.status(result.status).send();
 });
 
 module.exports = router;
